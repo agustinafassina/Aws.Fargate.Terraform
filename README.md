@@ -1,0 +1,2 @@
+# Create in Aws a fargate with terraform
+This project automates the deployment of a scalable containerized application using Amazon ECS with Fargate. It sets up the infrastructure including ECS clusters, task definitions, services, load balancers, and autoscaling policies. The configuration uses Terraform for infrastructure management, enabling dynamic scaling based on CPU and memory utilization to handle variable workload demands. The system also ensures secure communication with SSL/TLS, and images are stored in Amazon ECR for quick deployment.
