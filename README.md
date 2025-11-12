@@ -3,3 +3,6 @@ This project automates the deployment of a scalable containerized application us
 
 ### Diagram
 <img src="diagram.png" alt="Logo del proyecto" width="400" height="450">
+
+#### Repository version
+1.0.0
