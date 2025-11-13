@@ -3,21 +3,18 @@
 variable "aws_access_key_id" {
   description = "AWS access key"
 }
-
 variable "aws_secret_access_key" {
   description = "AWS secret access key"
 }
-
-variable "profile"{
+variable "profile" {
   description = "AWS profile"
 }
 
-################### EC2 INSTANCE  ##########################
+################### EC2 INSTANCE DETAIL  ##########################
 
 variable "region" {
   description = "AWS region to deploy resources"
 }
-
 variable "subnets" {
   description = "Subnet IDs for the Fargate service"
 }

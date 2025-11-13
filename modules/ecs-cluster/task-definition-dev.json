@@ -1,0 +1,14 @@
+[
+  {
+    "new": "testpropierty",
+    "name": "dev-project-files",
+    "image": "account-id.dkr.ecr.sa-east-1.amazonaws.com/image-test:tag-id",
+    "portMappings": [
+      {
+        "containerPort": 80,
+        "hostPort": 80
+      }
+    ],
+    "essential": true
+  }
+]

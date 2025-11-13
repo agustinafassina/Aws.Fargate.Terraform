@@ -1,9 +1,10 @@
 resource "aws_ecs_service" "app_service" {
-  name            = local.ecs_fargate_name
+  name            = var.ecs_fargate_name
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.app.arn
   launch_type     = "FARGATE"
   desired_count   = 1
+  force_new_deployment = true
 
   network_configuration {
     subnets         = var.subnets
