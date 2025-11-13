@@ -5,5 +5,7 @@ The repository structure has been reorganized to enhance maintainability and sca
 ### Diagram
 <img src="diagram/diagram.png" alt="Logo del proyecto" width="400" height="450">
 
-#### Repository version
+#### Repository version:
+```
 2.0.0
+```
