@@ -16,8 +16,8 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = <<EOT
 [
   {
-    "name": "dev-project-docker",
-    "image": "account-id.dkr.ecr.sa-east-1.amazonaws.com/image-test:id",
+    "name": "tf-dev-project-docker",
+    "image": "account-id.dkr.ecr.sa-east-1.amazonaws.com/tf-image-test:id",
     "portMappings": [
       {
         "containerPort": 80,
