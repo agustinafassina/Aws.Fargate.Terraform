@@ -1,9 +1,9 @@
-# AWS Fargate with Terraform
+# ☁️ AWS Fargate with Terraform
 Terraform project to deploy a containerized application on **Amazon ECS Fargate**. It provisions the core infrastructure: ECS cluster, task definition, Fargate service, security group, IAM execution role, and an ECR repository for Docker images.
 
 Resources are organized into modules by AWS service to keep the configuration maintainable and easy to extend.
 
-## Architecture
+## 🏗️ Architecture
 The stack creates:
 | Resource | Description |
 | --- | --- |
@@ -16,16 +16,16 @@ The stack creates:
 
 State is stored remotely in **S3** (`backend.tf`).
 
-### Diagram
+### 📊 Diagram
 <img src="diagram/diagram.png" alt="Architecture diagram" width="400" height="450">
 
-## Requirements
+## 📋 Requirements
 - [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.0`
 - AWS Provider `>= 5.0.0`
 - AWS account with permissions to manage ECS, ECR, IAM, EC2 (security groups), and S3
 - An existing VPC and subnets
 
-## Project structure
+## 📁 Project structure
 ```
 .
 ├── main.tf                 # Root module and provider
@@ -39,7 +39,7 @@ State is stored remotely in **S3** (`backend.tf`).
 └── diagram/                # Architecture diagram
 ```
 
-## Configuration
+## ⚙️ Configuration
 1. Copy the example variables file:
 
 ```bash
@@ -67,7 +67,7 @@ export TF_VAR_aws_secret_access_key="YOUR_SECRET_KEY"
 
 Resource names are built from the Terraform workspace and the `profile` variable (e.g. `tf-dev-test-ecs`).
 
-## Usage
+## 🚀 Usage
 Initialize Terraform and download providers:
 
 ```bash
@@ -95,12 +95,12 @@ Destroy infrastructure:
 terraform destroy -var-file=dev.tfvars
 ```
 
-## Notes
+## 💡 Notes
 - Update the container image in `modules/ecs-cluster/service-task-definition.tf` to point to your ECR repository before deploying.
 - The Fargate service is configured with `assign_public_ip = true` and exposes port 80.
 - Adjust `backend.tf` (S3 bucket, region, key) to match your remote state setup.
 
-## Version
+## 🏷️ Version
 ```
 2.0.0
 ```
