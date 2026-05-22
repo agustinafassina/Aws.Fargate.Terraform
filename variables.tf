@@ -15,6 +15,9 @@ variable "profile" {
 variable "region" {
   description = "AWS region to deploy resources"
 }
+variable "vpc_id" {
+  description = "VPC ID where ECS resources are deployed"
+}
 variable "subnets" {
   description = "Subnet IDs for the Fargate service"
 }

@@ -1,6 +1,7 @@
 resource "aws_security_group" "security_group" {
   name        = var.ecs_security_group_name
   description = "Fargate security group"
+  vpc_id      = var.vpc_id
 
   ingress {
     description      = "HTTP from anywhere"

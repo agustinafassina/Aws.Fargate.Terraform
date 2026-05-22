@@ -1,21 +1,28 @@
 terraform {
-  required_version = "= 0.13.4"
+  required_version = ">= 1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0.0"
+    }
+  }
 }
+
 provider "aws" {
   access_key               = var.aws_access_key_id
   secret_key               = var.aws_secret_access_key
-  shared_credentials_files = ["$HOME/.aws/credentials"]
   region                   = var.region
 }
 
 locals {
   environment              = terraform.workspace
-  ecs_cluster_name         = "tf-${local.environment}-test-ecs"
-  ecs_role_name            = "tf-${local.environment}-test-execution-role"
-  ecs_fargate_name         = "${local.environment}-project-docker"
-  ecs_security_group_name  = "tf-${local.environment}-test-sg"
-  task_family_name         = "${local.environment}-project-docker"
-  ecr_name                 = "tf-${local.environment}-test-ecr-repo"
+  aws_profile              = var.profile
+  ecs_cluster_name         = "tf-${local.environment}-${local.aws_profile}-ecs"
+  ecs_role_name            = "tf-${local.environment}-${local.aws_profile}-execution-role"
+  ecs_fargate_name         = "tf-${local.environment}-${local.aws_profile}-project-docker"
+  ecs_security_group_name  = "tf-${local.environment}-${local.aws_profile}-sg"
+  task_family_name         = "tf-${local.environment}-${local.aws_profile}-project-docker"
+  ecr_name                 = "tf-${local.environment}-${local.aws_profile}-ecr-image"
 }
 
 module "ecs-cluster" {
@@ -24,6 +31,7 @@ module "ecs-cluster" {
   environment              = local.environment
   ecs_cluster_name         = local.ecs_cluster_name
   ecs_security_group_name  = local.ecs_security_group_name
+  vpc_id                   = var.vpc_id
   subnets                  = var.subnets
   ecs_fargate_name         = local.ecs_fargate_name
   task_family_name         = local.task_family_name
@@ -34,11 +42,9 @@ module "ecs-cluster" {
 
 module "ecr" {
   source = "./modules/ecr"
-
   ecr_name               = local.ecr_name
 }
 module "iam" {
   source = "./modules/iam"
-
   ecs_role_name          = local.ecs_role_name
 }

@@ -8,6 +8,10 @@ variable "ecs_security_group_name" {
   description = "ECS security group name"
 }
 
+variable "vpc_id" {
+  description = "VPC ID where ECS resources are deployed"
+}
+
 variable "subnets" {
   description = "Subnets"
 }
