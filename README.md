@@ -47,7 +47,6 @@ cp example.tfvars dev.tfvars
 ```
 
 2. Edit `dev.tfvars` with your AWS values:
-
 ```hcl
 region   = "sa-east-1"
 vpc_id   = "vpc-xxxxxx"
