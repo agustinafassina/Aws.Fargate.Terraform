@@ -1,5 +1,5 @@
 # ☁️ AWS Fargate with Terraform
-Terraform project to deploy a containerized application on **Amazon ECS Fargate**. It provisions the core infrastructure: ECS cluster, task definition, Fargate service, security group, IAM execution role, and an ECR repository for Docker images.
+Terraform project to deploy one or more Docker services on **Amazon ECS Fargate**. It provisions a shared ECS cluster per workspace, one ECS service per Docker app, task definitions, security groups, CloudWatch Logs, IAM roles, and ECR repositories.
 
 Resources are organized into modules by AWS service to keep the configuration maintainable and easy to extend.
 
@@ -7,12 +7,13 @@ Resources are organized into modules by AWS service to keep the configuration ma
 The stack creates:
 | Resource | Description |
 | --- | --- |
-| ECS Cluster | Fargate cluster for running tasks |
-| ECS Task Definition | Container spec (CPU, memory, image, ports) |
-| ECS Service | Runs one Fargate task with public IP |
-| Security Group | Allows inbound HTTP (port 80) |
-| IAM Role | ECS task execution role |
-| ECR Repository | Private registry for container images |
+| ECS Cluster | Shared Fargate cluster for the project/environment |
+| ECS Services | One service per Docker entry in `services` |
+| ECS Task Definitions | Container specs generated with `jsonencode(...)` |
+| Security Groups | One security group per service |
+| CloudWatch Logs | One log group per service |
+| IAM Roles | Separate execution role and task role |
+| ECR Repositories | One repository per service |
 
 State is stored remotely in **S3** (`backend.tf`).
 
@@ -20,10 +21,11 @@ State is stored remotely in **S3** (`backend.tf`).
 <img src="diagram/diagram.png" alt="Architecture diagram" width="400" height="450">
 
 ## 📋 Requirements
-- [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.0`
-- AWS Provider `>= 5.0.0`
+- [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.15.0, < 2.0.0`
+- AWS Provider `>= 5.0.0, < 7.0.0`
 - AWS account with permissions to manage ECS, ECR, IAM, EC2 (security groups), and S3
 - An existing VPC and subnets
+- AWS credentials configured through an AWS profile, environment variables, or an assumed role
 
 ## 📁 Project structure
 ```
@@ -33,9 +35,10 @@ State is stored remotely in **S3** (`backend.tf`).
 ├── backend.tf              # S3 remote state
 ├── example.tfvars          # Example variable values
 ├── modules/
-│   ├── ecs-cluster/        # Cluster, service, task definition, SG
+│   ├── ecs-cluster/        # Shared ECS cluster
+│   ├── ecs-service/        # ECS service, task definition, SG, logs
 │   ├── ecr/                # ECR repository
-│   └── iam/                # ECS execution role
+│   └── iam/                # ECS execution and task roles
 └── diagram/                # Architecture diagram
 ```
 
@@ -46,25 +49,46 @@ State is stored remotely in **S3** (`backend.tf`).
 cp example.tfvars dev.tfvars
 ```
 
-2. Edit `dev.tfvars` with your AWS values:
+2. Edit `dev.tfvars` with your AWS values and Docker services:
 ```hcl
-region   = "sa-east-1"
-vpc_id   = "vpc-xxxxxx"
-subnets  = ["subnet-xxxxxx", "subnet-xxxxxx"]
-cpu      = "1024"   # 1 vCPU
-memory   = "2048"   # 2 GB
-profile  = "your-aws-profile"
-```
+region  = "sa-east-1"
+vpc_id  = "vpc-xxxxxx"
+subnets = ["subnet-xxxxxx", "subnet-xxxxxx"]
+profile = "your-aws-profile"
 
-3. Provide AWS credentials via environment variables or CLI flags:
-```bash
-export TF_VAR_aws_access_key_id="YOUR_ACCESS_KEY"
-export TF_VAR_aws_secret_access_key="YOUR_SECRET_KEY"
+services = {
+  api = {
+    image          = "account-id.dkr.ecr.sa-east-1.amazonaws.com/api:latest"
+    container_port = 80
+    cpu            = 1024
+    memory         = 2048
+    desired_count  = 1
+
+    environment_variables = {
+      APP_ENV = "dev"
+    }
+  }
+
+  worker = {
+    image         = "account-id.dkr.ecr.sa-east-1.amazonaws.com/worker:latest"
+    cpu           = 512
+    memory        = 1024
+    desired_count = 1
+  }
+}
 ```
 
 > `dev.tfvars` is listed in `.gitignore` to avoid committing sensitive or environment-specific values.
 
 Resource names are built from the Terraform workspace and the `profile` variable (e.g. `tf-dev-test-ecs`).
+
+## 🧩 Multi-service model
+Use one ECS cluster for the same project/environment and add new Docker workloads as new entries in `services`.
+
+- Use a new `services` entry when the Docker belongs to the same project and environment.
+- Use a new cluster when the workload belongs to another project, AWS account, VPC, environment, or requires strong isolation.
+- Omit `container_port` for workers or background jobs that do not receive inbound traffic.
+- If `image` is omitted, Terraform still creates the service ECR repository and uses that repository URL with `image_tag`.
 
 ## 🚀 Usage
 Initialize Terraform and download providers:
@@ -94,9 +118,18 @@ Destroy infrastructure:
 terraform destroy -var-file=dev.tfvars
 ```
 
+Format and validate the configuration:
+
+```bash
+terraform fmt -recursive
+terraform validate
+```
+
 ## 💡 Notes
-- Update the container image in `modules/ecs-cluster/service-task-definition.tf` to point to your ECR repository before deploying.
-- The Fargate service is configured with `assign_public_ip = true` and exposes port 80.
+- Each service can define `image`, `container_port`, `cpu`, `memory`, `desired_count`, `environment_variables`, `secrets`, `ingress_cidr_blocks`, `assign_public_ip`, and `log_retention_in_days`.
+- For development, services default to `assign_public_ip = true`.
+- For production, prefer private subnets, restricted security groups, and an Application Load Balancer for public HTTP traffic.
+- Secrets should be referenced from AWS Secrets Manager or SSM Parameter Store using the `secrets` map.
 - Adjust `backend.tf` (S3 bucket, region, key) to match your remote state setup.
 
 ## 🏷️ Version
